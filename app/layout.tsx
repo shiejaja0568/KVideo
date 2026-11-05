@@ -71,14 +71,14 @@ export const metadata: Metadata = {
   title: siteConfig.title,
   description: siteConfig.description,
   openGraph: {
-    title: siteConfig.name,
+    title: '帥爸爸電影院',
     description: siteConfig.description.trim() || '電影・影集・動漫，隨時開場',
     images: [
       {
         url: 'https://kvideo-9ug.pages.dev/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'KV 電影院電影主題分享封面',
+        alt: '帥爸爸電影院電影主題分享封面',
       },
     ],
   },
