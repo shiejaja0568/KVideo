@@ -8,13 +8,38 @@
 import { NextRequest } from 'next/server';
 import { searchVideos } from '@/lib/api/client';
 import { getSourceName } from '@/lib/utils/source-names';
-import { traditionalToSimplified } from '@/lib/utils/chinese-convert';
+import { simplifiedToTraditional, traditionalToSimplified } from '@/lib/utils/chinese-convert';
+import type { VideoItem, VideoSource } from '@/lib/types';
 
 export const runtime = 'edge';
 
 const MAX_TOTAL_VIDEOS = 2000;
 const MAX_PAGES_PER_SOURCE = 3;
 const PER_SOURCE_TIMEOUT_MS = 20000;
+
+async function searchSourceVariants(
+  queries: string[],
+  source: VideoSource,
+  page: number,
+  signal: AbortSignal
+): Promise<{ results: VideoItem[]; pagecount: number }> {
+  const responses = await Promise.all(
+    queries.map(query => searchVideos(query, [source], page, signal))
+  );
+  const uniqueVideos = new Map<string, VideoItem>();
+
+  for (const response of responses) {
+    for (const video of response[0]?.results || []) {
+      const key = String(video.vod_id || video.vod_name);
+      if (!uniqueVideos.has(key)) uniqueVideos.set(key, video);
+    }
+  }
+
+  return {
+    results: Array.from(uniqueVideos.values()),
+    pagecount: Math.max(1, ...responses.map(response => response[0]?.pagecount ?? 1)),
+  };
+}
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -43,7 +68,11 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        const normalizedQuery = traditionalToSimplified(query.trim());
+        const trimmedQuery = query.trim();
+        const queryVariants = Array.from(new Set([
+          traditionalToSimplified(trimmedQuery),
+          simplifiedToTraditional(trimmedQuery),
+        ]));
         const sources = Array.isArray(sourceConfigs) && sourceConfigs.length > 0
           ? sourceConfigs
           : [];
@@ -76,13 +105,13 @@ export async function POST(request: NextRequest) {
           signal.addEventListener('abort', onRequestAbort, { once: true });
 
           try {
-            const result = await searchVideos(
-              normalizedQuery, [source], 1, sourceController.signal
+            const result = await searchSourceVariants(
+              queryVariants, source, 1, sourceController.signal
             );
             const endTime = performance.now();
             const latency = Math.round(endTime - startTime);
-            const videos = result[0]?.results || [];
-            const pagecount = result[0]?.pagecount ?? 1;
+            const videos = result.results;
+            const pagecount = result.pagecount;
 
             completedSources++;
             totalVideosFound += videos.length;
@@ -120,10 +149,10 @@ export async function POST(request: NextRequest) {
                 if (signal.aborted || totalVideosFound >= MAX_TOTAL_VIDEOS) break;
 
                 try {
-                  const pageResult = await searchVideos(
-                    normalizedQuery, [source], pg, sourceController.signal
+                  const pageResult = await searchSourceVariants(
+                    queryVariants, source, pg, sourceController.signal
                   );
-                  const pageVideos = pageResult[0]?.results || [];
+                  const pageVideos = pageResult.results;
                   totalVideosFound += pageVideos.length;
 
                   if (pageVideos.length > 0 && !signal.aborted) {
