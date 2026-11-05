@@ -3,6 +3,7 @@
 import { Icons } from '@/components/ui/Icon';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useTraditionalText } from '@/lib/hooks/useTraditionalText';
 
 export interface Tag {
     id: string;
@@ -25,6 +26,7 @@ export function SortableTag({
     onTagSelect,
     onTagDelete,
 }: SortableTagProps) {
+    const label = useTraditionalText(tag.label);
     const {
         attributes,
         listeners,
@@ -60,7 +62,7 @@ export function SortableTag({
                         }
           `}
                 >
-                    {tag.label}
+                    {label}
                 </button>
                 {showTagManager && (
                     <button

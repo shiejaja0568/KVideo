@@ -3,6 +3,7 @@ import { DragEndEvent } from '@dnd-kit/core';
 import { TagInput } from './TagInput';
 import { TagList } from './TagList';
 import { Tag } from './SortableTag';
+import { useTraditionalText } from '@/lib/hooks/useTraditionalText';
 
 interface RecommendTagConfig {
   label: string;
@@ -45,6 +46,10 @@ export function TagManager({
   isLoadingTags,
   recommendTag,
 }: TagManagerProps) {
+  const managementLabel = useTraditionalText(showTagManager ? '完成' : '管理标签');
+  const restoreDefaultsLabel = useTraditionalText('恢复默认');
+  const loadingLabel = useTraditionalText('正在加载标签...');
+
   return (
     <>
       {/* Management Controls */}
@@ -54,7 +59,7 @@ export function TagManager({
           className="text-sm text-[var(--text-color-secondary)] hover:text-[var(--accent-color)] transition-colors flex items-center gap-2 cursor-pointer"
         >
           <Icons.Tag size={16} />
-          {showTagManager ? '完成' : '管理标签'}
+          {managementLabel}
         </button>
         {showTagManager && (
           <button
@@ -62,7 +67,7 @@ export function TagManager({
             className="text-sm text-[var(--text-color-secondary)] hover:text-[var(--accent-color)] transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Icons.RefreshCw size={16} />
-            恢复默认
+            {restoreDefaultsLabel}
           </button>
         )}
       </div>
@@ -80,7 +85,7 @@ export function TagManager({
       {isLoadingTags ? (
         <div className="flex items-center gap-2 py-4">
           <Icons.RefreshCw size={16} className="animate-spin text-[var(--accent-color)]" />
-          <span className="text-sm text-[var(--text-color-secondary)]">正在加载标签...</span>
+          <span className="text-sm text-[var(--text-color-secondary)]">{loadingLabel}</span>
         </div>
       ) : (
         <TagList

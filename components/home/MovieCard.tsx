@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Icons } from '@/components/ui/Icon';
+import { useTraditionalText } from '@/lib/hooks/useTraditionalText';
 
 interface DoubanMovie {
   id: string;
@@ -25,6 +26,7 @@ interface MovieCardProps {
 export const MovieCard = memo(function MovieCard({ movie, onMovieClick }: MovieCardProps) {
   const [imageError, setImageError] = useState(false);
   const [fallbackError, setFallbackError] = useState(false);
+  const displayTitle = useTraditionalText(movie.title);
 
   return (
     <Link
@@ -51,7 +53,7 @@ export const MovieCard = memo(function MovieCard({ movie, onMovieClick }: MovieC
           {!imageError ? (
             <Image
               src={movie.cover}
-              alt={movie.title}
+              alt={displayTitle}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-[var(--radius-2xl)]"
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
@@ -63,7 +65,7 @@ export const MovieCard = memo(function MovieCard({ movie, onMovieClick }: MovieC
           ) : !fallbackError ? (
             <Image
               src="/placeholder-poster.svg"
-              alt={movie.title}
+              alt={displayTitle}
               fill
               className="object-cover rounded-[var(--radius-2xl)]"
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
@@ -94,7 +96,7 @@ export const MovieCard = memo(function MovieCard({ movie, onMovieClick }: MovieC
         </div>
         <div className="pt-3">
           <h3 className="font-semibold text-sm text-center text-[var(--text-color)] line-clamp-2 group-hover:text-[var(--accent-color)] transition-colors">
-            {movie.title}
+            {displayTitle}
           </h3>
         </div>
       </Card>
