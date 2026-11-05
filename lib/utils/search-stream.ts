@@ -12,6 +12,25 @@ function isCategoryBlocked(video: any, blockedCategories: string[]): boolean {
     return blockedCategories.some(cat => typeName.includes(cat.toLowerCase()));
 }
 
+async function getSearchQueryVariants(query: string): Promise<string[]> {
+    const trimmedQuery = query.trim();
+    if (!/[\u3400-\u9fff]/.test(trimmedQuery)) return [trimmedQuery];
+
+    try {
+        const OpenCC = await import('opencc-js');
+        const toSimplified = OpenCC.Converter({ from: 'tw', to: 'cn' });
+        const toTraditional = OpenCC.Converter({ from: 'cn', to: 'tw' });
+        return Array.from(new Set([
+            trimmedQuery,
+            toSimplified(trimmedQuery),
+            toTraditional(trimmedQuery),
+        ]));
+    } catch (error) {
+        console.warn('[Search] Failed to prepare Chinese query variants:', error);
+        return [trimmedQuery];
+    }
+}
+
 interface StreamHandlerParams {
     reader: ReadableStreamDefaultReader<Uint8Array>;
     onStart: (totalSources: number) => void;
@@ -52,8 +71,9 @@ export async function processSearchStream({
     };
 
     try {
-        resetTimeout(); // Start initial timeout
         const blockedCategories = settingsStore.getSettings().blockedCategories;
+        const queryVariants = await getSearchQueryVariants(currentQuery);
+        resetTimeout(); // Start initial timeout after query normalization
 
         while (true) {
             const { done, value } = await reader.read();
@@ -74,13 +94,17 @@ export async function processSearchStream({
                         resetTimeout();
                     } else if (data.type === 'videos') {
                         const newVideos: Video[] = data.videos
-                            .filter((video: any) => hasMinimumMatch(video.vod_name, currentQuery))
+                            .filter((video: any) => queryVariants.some(query =>
+                                hasMinimumMatch(video.vod_name, query)
+                            ))
                             .filter((video: any) => !isCategoryBlocked(video, blockedCategories))
                             .map((video: any) => ({
                                 ...video,
                                 sourceName: video.sourceDisplayName || getSourceName(video.source),
                                 isNew: true,
-                                relevanceScore: calculateRelevanceScore(video, currentQuery),
+                                relevanceScore: Math.max(...queryVariants.map(query =>
+                                    calculateRelevanceScore(video, query)
+                                )),
                             }));
                         onVideos(newVideos, data.source);
                         if (data.pagecount && onPageInfo) {
