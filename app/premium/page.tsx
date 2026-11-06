@@ -43,7 +43,7 @@ function PremiumHomePage() {
                     currentSource=""
                     checkedSources={completedSources}
                     totalSources={totalSources}
-                    placeholder="输入关键词开始搜索..."
+                    placeholder="輸入關鍵字開始搜尋..."
                     isPremium={true}
                 />
             </div>
