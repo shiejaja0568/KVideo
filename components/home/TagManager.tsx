@@ -54,13 +54,6 @@ export function TagManager({
     <>
       {/* Management Controls */}
       <div className="mb-6 flex items-center justify-between">
-        <button
-          onClick={onToggleManager}
-          className="text-sm text-[var(--text-color-secondary)] hover:text-[var(--accent-color)] transition-colors flex items-center gap-2 cursor-pointer"
-        >
-          <Icons.Tag size={16} />
-          {managementLabel}
-        </button>
         {showTagManager && (
           <button
             onClick={onRestoreDefaults}

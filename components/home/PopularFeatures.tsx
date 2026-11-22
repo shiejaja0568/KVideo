@@ -93,12 +93,12 @@ export function PopularFeatures({ onSearch }: PopularFeaturesProps) {
       <TagManager
         tags={tags}
         selectedTag={selectedTag}
-        showTagManager={showTagManager}
+        showTagManager={false}
         newTagInput={newTagInput}
         justAddedTag={justAddedTag}
         onTagSelect={handleRegularTagSelect}
         onTagDelete={handleDeleteTag}
-        onToggleManager={() => setShowTagManager(!showTagManager)}
+        onToggleManager={() => setShowTagManager(false)}
         onRestoreDefaults={handleRestoreDefaults}
         onNewTagInputChange={setNewTagInput}
         onAddTag={handleAddTag}
