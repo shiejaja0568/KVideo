@@ -5,6 +5,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { PremiumSourceSettings } from '@/components/settings/PremiumSourceSettings';
 import { DisplaySettings } from '@/components/settings/DisplaySettings';
 import { PlayerSettings } from '@/components/settings/PlayerSettings';
+import { AppVersionSettings } from '@/components/settings/AppVersionSettings';
+import { AccountSettings } from '@/components/settings/AccountSettings';
 import { AdminGate } from '@/components/AdminGate';
 import { usePremiumSettingsPage } from './hooks/usePremiumSettingsPage';
 import Link from 'next/link';
@@ -27,11 +29,13 @@ export default function PremiumSettingsPage() {
         searchDisplayMode,
         fullscreenType,
         proxyMode,
+        seekStepSeconds,
         rememberScrollPosition,
         handleRealtimeLatencyChange,
         handleSearchDisplayModeChange,
         handleFullscreenTypeChange,
         handleProxyModeChange,
+        handleSeekStepSecondsChange,
         handleRememberScrollPositionChange,
         locale,
         handleLocaleChange,
@@ -73,12 +77,19 @@ export default function PremiumSettingsPage() {
                     </div>
                 </div>
 
+                <AppVersionSettings />
+
+                {/* Account management and logout must remain available in premium mode. */}
+                <AccountSettings />
+
                 {/* Player Settings */}
                 <PlayerSettings
                     fullscreenType={fullscreenType}
                     onFullscreenTypeChange={handleFullscreenTypeChange}
                     proxyMode={proxyMode}
                     onProxyModeChange={handleProxyModeChange}
+                    seekStepSeconds={seekStepSeconds}
+                    onSeekStepSecondsChange={handleSeekStepSecondsChange}
                     danmakuApiUrl={danmakuApiUrl}
                     onDanmakuApiUrlChange={handleDanmakuApiUrlChange}
                     danmakuOpacity={danmakuOpacity}
